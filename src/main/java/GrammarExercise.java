@@ -1,3 +1,6 @@
+import exception.GrammarExerciseException;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -5,6 +8,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class GrammarExercise {
+
+    private final static String VERIFY_VALID_REGULAR = "^[A-Z]+$";
+
+    private final static String SPLIT_STRING = ",";
+
+    private final static String SPACE_STRING = " ";
+
+    private final static String INPUT_NOT_VALID = "input not valid";
+
     public static void main(String[] args) {
         //需要从命令行读入
         String firstWordList = "";
@@ -17,28 +29,25 @@ public class GrammarExercise {
 
     public static List<String> findCommonWordsWithSpace(String firstWordList, String secondWordList) {
 
-        firstWordList = firstWordList.toUpperCase();
-        secondWordList = secondWordList.toUpperCase();
-
         // 解析字符串
-        String[] firstSplitString = firstWordList.split(",");
-        String[] secondSplitString = secondWordList.split(",");
+        List<String> firstStream = getWordList(firstWordList);
+        List<String> secondStream = getWordList(secondWordList);
 
-
-        Stream.of(firstSplitString).forEach(GrammarExercise::checkString);
-
-
-        Stream.of(secondSplitString).forEach(GrammarExercise::checkString);
-
-        Set<String> firstStringSet = Stream.of(firstSplitString).collect(Collectors.toSet());
-        Set<String> secondStringSet = Stream.of(secondSplitString).collect(Collectors.toSet());
-
-
-        firstStringSet.retainAll(secondStringSet);
-
+        firstStream.retainAll(secondStream);
 
         //在这编写实现代码
-        return firstStringSet.stream().sorted().map(GrammarExercise::addSpace).collect(Collectors.toList());
+        return firstStream.stream()
+                .sorted()
+                .map(GrammarExercise::addSpace)
+                .collect(Collectors.toList());
+    }
+
+    private static List<String> getWordList(String wordList) {
+        return Arrays.stream(wordList.split(SPLIT_STRING))
+                .map(String::toUpperCase)
+                .peek(GrammarExercise::checkString)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     private static String addSpace(String s) {
@@ -46,7 +55,7 @@ public class GrammarExercise {
 
         StringBuilder stringBuffer = new StringBuilder();
         for (int i = 0; i < chars.length - 1; i++) {
-            stringBuffer.append(chars[i]).append(" ");
+            stringBuffer.append(chars[i]).append(SPACE_STRING);
         }
         stringBuffer.append(chars[chars.length - 1]);
         return stringBuffer.toString();
@@ -54,14 +63,12 @@ public class GrammarExercise {
 
     private static void checkString(String string) {
         if ("".equals(string) || !checkIllegal(string)) {
-            throw new RuntimeException("input not valid");
+            throw new GrammarExerciseException(INPUT_NOT_VALID);
         }
-
     }
 
     private static boolean checkIllegal(String string) {
-        String pattern = "^[A-Z]+$";
-        return Pattern.matches(pattern, string);
+        return Pattern.matches(VERIFY_VALID_REGULAR, string);
     }
 
 
